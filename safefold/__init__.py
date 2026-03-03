@@ -4,3 +4,4 @@ DNA = input()
 AAss = find_orfs(DNA)
 for AAs in AAss:
     pass
+    #GOs, struc = run_dpfunc(AAs)
