@@ -2,20 +2,19 @@ import os
 import dgl
 import esm
 import torch
+import joblib
 import numpy as np
 import pickle as pkl
 from pathlib import Path
 import scipy.sparse as sp
 from Bio.PDB import PDBParser
 from Bio.SeqUtils import seq1
+from DPFunc_pred import dpfunc_predict_in_memory
 
-# EDIT THESE
-PID = "A0S864"
-ONTOLOGY = "mf"  # "mf", "bp", "cc"
-PDB_PATH = f"./data/PDB/{PID}.pdb"
 
 # Constants from DPFunc_model checkpoints
 INTERPRO_DIM = 22369
+ONTOLOGY = "mf"  # "mf", "bp", "cc"
 
 def save_pkl(path, obj):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -80,61 +79,59 @@ def build_graph_from_points(points: np.ndarray, threshold: float = 12.0):
     g.edata["dis"] = torch.tensor(dis, dtype=torch.float32)
     return g
 
-def get_GO_terms(PDB_PATH: str):
-    save_pkl(f"./processed_file/{ONTOLOGY}_test_used_pid_list.pkl", [PID])
-    
+def get_GO_terms(PDB_PATH: str, debug = False):
+    # 1) Build seq + coords
     seq, coords = extract_sequence_and_ca_coords(PDB_PATH, chain_id=None)
-    save_pkl("./processed_file/pdb_points.pkl", {PID: coords})
-    save_pkl("./processed_file/pdb_seqs.pkl", {PID: seq})
-    
+    if debug: (print("🔗 Extracting sequence and Cα coords from PDB"))
+
+    # 2) ESM residue embeddings (L, 1280)
     emb = embed_esm2_t33_650M(seq)
+    if debug: (print("🔢 Creating the ESM embedding"))
+
     assert emb.shape[0] == len(seq)
     assert emb.shape[1] == 1280, emb.shape
-    save_pkl("./processed_file/esm_emds/esm_part_0.pkl", {PID: emb})
-    
+
+    # 3) DGL graph with required fields
     g = build_graph_from_points(coords, threshold=12.0)
-    g.ndata["x"] = torch.from_numpy(emb)
-    out_graph_path = f"./processed_file/graph_features/{ONTOLOGY}_test_whole_pdb_part0.pkl"
-    save_pkl(out_graph_path, [g])
+    g.ndata["x"] = torch.from_numpy(emb)  # node features
+    if debug: (print("🕸️ Building the DGL graph"))
 
-    dummy_go = "GO:0003674"  # molecular_function
-    go_path = f"./processed_file/{ONTOLOGY}_test_pid_go.txt"
-    with open(go_path, "w") as f:
-        f.write(f"{PID}\t{dummy_go}\n")
-    
-    X = sp.csr_matrix((1, INTERPRO_DIM), dtype=np.float32)
-    with open(f"./processed_file/{ONTOLOGY}_test_interpro_file.pkl", "wb") as f:
-        pkl.dump(X, f)
-    save_pkl(f"./processed_file/interpro/{PID}.pkl", np.zeros(INTERPRO_DIM, dtype=np.float32))
-    
-    cfg_path = f"./configure/{ONTOLOGY}.yaml"
-    yaml_lines = [
-        f"name: {ONTOLOGY}\n",
-        f"mlb: ./mlb/{ONTOLOGY}_go.mlb\n",
-        "results: ./results\n\n",
-        "base:\n",
-        "  interpro_whole: ./processed_file/interpro/{}.pkl\n\n",
-        "test:\n",
-        "  name: test\n",
-        f"  pid_list_file: ./processed_file/{ONTOLOGY}_test_used_pid_list.pkl\n",
-        f"  pid_pdb_file: ./processed_file/graph_features/{ONTOLOGY}_test_whole_pdb_part0.pkl\n",
-        f"  pid_go_file: ./processed_file/{ONTOLOGY}_test_pid_go.txt\n",
-        f"  interpro_file: ./processed_file/{ONTOLOGY}_test_interpro_file.pkl\n",
+    # 4) InterPro features (placeholder zeros; ideally replace with real InterProScan-derived vector)
+    interpro = np.zeros((1, INTERPRO_DIM), dtype=np.float32)
+
+    mlb = joblib.load(Path(__file__). parent / f"./mlb/{ONTOLOGY}_go.mlb")
+
+    checkpoint_paths = [
+        Path(__file__). parent / f"./save_models/DPFunc_model_{ONTOLOGY}_0of3model.pt",
+        Path(__file__). parent / f"./save_models/DPFunc_model_{ONTOLOGY}_1of3model.pt",
+        Path(__file__). parent /  f"./save_models/DPFunc_model_{ONTOLOGY}_2of3model.pt",
     ]
-    with open(cfg_path, "w") as f:
-        f.writelines(yaml_lines)
-    print("Wrote:", cfg_path)
 
-    print(f"Run:\n  python DPFunc_pred.py -d {ONTOLOGY} -n 0 -p DPFunc_model")
+    interpro_csr = sp.csr_matrix((1, INTERPRO_DIM), dtype=np.float32)
+    
+    if debug: (print("🚀 Runing DPFunc"))
+    final_result = dpfunc_predict_in_memory(
+        ont=ONTOLOGY,
+        pid_list=[PID],
+        graphs=[g],
+        interpro=interpro_csr,
+        mlb=mlb,
+        checkpoint_paths=checkpoint_paths,
+        device="cuda:0" if torch.cuda.is_available() else "cpu",
+        batch_size=1,
+        save_each_submodel=False,
+    )
+    
+    if debug:
+        print("✅ Done. Results...")
+        print(final_result)
+
+    return final_result
 
 
-
-
-Path("./processed_file/graph_features").mkdir(parents=True, exist_ok=True)
-Path("./processed_file/esm_emds").mkdir(parents=True, exist_ok=True)
-Path("./processed_file/interpro").mkdir(parents=True, exist_ok=True)
-Path("./results").mkdir(parents=True, exist_ok=True)
-Path("./configure").mkdir(parents=True, exist_ok=True)
-
-save_pkl(f"./processed_file/{ONTOLOGY}_test_used_pid_list.pkl", [PID])
-print("Wrote:", f"./processed_file/{ONTOLOGY}_test_used_pid_list.pkl")
+if __name__ == "__main__":
+    # EDIT THESE
+    PID = "A0S864"
+    PDB_PATH = Path(__file__).parent / Path(f"./data/PDB/{PID}.pdb")
+    
+    get_GO_terms(PDB_PATH, debug=True)
