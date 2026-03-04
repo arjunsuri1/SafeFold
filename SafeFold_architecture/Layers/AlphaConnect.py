@@ -1,19 +1,46 @@
+import subprocess
 import os
-from openprotein import OpenProtein
-
-api_key = os.environ["OPENPROTEIN_API_KEY"]
-client = OpenProtein(api_key=api_key)
+from pathlib import Path
 
 
-seq = "MSTNPKPQRKTKRNTNRRPQDVKFPGG"
+def alphafold_pred(sequence, outdir="results"):
+    Path(outdir).mkdir(exist_ok=True)
 
-def alphafold_pred(seq):
-    job = client.fold.esmfold.fold([seq])
-    result = client.fold.get_results(job).result()
+    cmd = [
+        "amina",
+        "run",
+        "esmfold",
+        "--sequence",
+        sequence,
+        "-o",
+        outdir
+    ]
 
-    with open("prediction.pdb", "w") as f:
-        f.write(result.pdb)
+    subprocess.run(cmd, check=True)
+
+    # find generated pdb
+    for file in os.listdir(outdir):
+        if file.endswith(".pdb"):
+            return os.path.join(outdir, file)
+
+    raise RuntimeError("No PDB produced")
+
+pdb_path = alphafold_pred(seq)
+
+# print file contents
+with open(pdb_path, "r") as f:
+    print(f.read())
+
+os.remove(pdb_path)
 
 
 if __name__ == "__main__":
-    pass
+    seq = "MSTNPKPQRKTKRNTNRRPQDVKFPGG"
+    pdb_path = alphafold_pred(seq)
+
+    # save as prediction.pdb if you want a fixed name
+    with open(pdb_path) as f:
+        pdb_data = f.read()
+
+    with open("prediction.pdb", "w") as f:
+        f.write(pdb_data)
