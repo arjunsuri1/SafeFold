@@ -5,6 +5,7 @@ import torch
 import joblib
 import numpy as np
 import pickle as pkl
+from io import StringIO
 from pathlib import Path
 import scipy.sparse as sp
 from Bio.PDB import PDBParser
@@ -21,11 +22,7 @@ def save_pkl(path, obj):
     with open(path, "wb") as f:
         pkl.dump(obj, f)
 
-def extract_sequence_and_ca_coords(pdb_file, chain_id=None):
-    parser = PDBParser(QUIET=True)
-    structure = parser.get_structure("protein", pdb_file)
-    model = structure[0]
-
+def extract_sequence_and_ca_coords(model, chain_id=None):
     if chain_id is None:
         chains = list(model.get_chains())
         if not chains:
@@ -79,22 +76,22 @@ def build_graph_from_points(points: np.ndarray, threshold: float = 12.0):
     g.edata["dis"] = torch.tensor(dis, dtype=torch.float32)
     return g
 
-def get_GO_terms(PDB_PATH: str, debug = False):
+def get_GO_terms(PDB, PID, debug = False):
     # 1) Build seq + coords
-    seq, coords = extract_sequence_and_ca_coords(PDB_PATH, chain_id=None)
     if debug: (print("🔗 Extracting sequence and Cα coords from PDB"))
+    seq, coords = extract_sequence_and_ca_coords(PDB, chain_id=None)
 
     # 2) ESM residue embeddings (L, 1280)
-    emb = embed_esm2_t33_650M(seq)
     if debug: (print("🔢 Creating the ESM embedding"))
+    emb = embed_esm2_t33_650M(seq)
 
     assert emb.shape[0] == len(seq)
     assert emb.shape[1] == 1280, emb.shape
 
+    if debug: (print("🕸️ Building the DGL graph"))
     # 3) DGL graph with required fields
     g = build_graph_from_points(coords, threshold=12.0)
     g.ndata["x"] = torch.from_numpy(emb)  # node features
-    if debug: (print("🕸️ Building the DGL graph"))
 
     # 4) InterPro features (placeholder zeros; ideally replace with real InterProScan-derived vector)
     interpro = np.zeros((1, INTERPRO_DIM), dtype=np.float32)
@@ -120,7 +117,7 @@ def get_GO_terms(PDB_PATH: str, debug = False):
         device="cuda:0" if torch.cuda.is_available() else "cpu",
         batch_size=1,
         save_each_submodel=False,
-    )
+    ).predictions
     
     if debug:
         print("✅ Done. Results...")
@@ -134,4 +131,8 @@ if __name__ == "__main__":
     PID = "A0S864"
     PDB_PATH = Path(__file__).parent / Path(f"./data/PDB/{PID}.pdb")
     
-    get_GO_terms(PDB_PATH, debug=True)
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("protein", PDB_PATH)
+    model = structure[0]
+    
+    get_GO_terms(model, PID, debug=True)
