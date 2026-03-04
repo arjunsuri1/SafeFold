@@ -1,4 +1,9 @@
-from ORF_detector import find_orfs
+import os
+from dotenv import load_dotenv
+from safefold.Layers.ORF_detector import find_orfs
+
+load_dotenv()
+api_key = os.getenv("AMINA_API_KEY")
 
 DNA = input()
 AAss = find_orfs(DNA)

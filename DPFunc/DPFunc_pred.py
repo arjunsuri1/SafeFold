@@ -87,10 +87,13 @@ def main(data_cnf, gpu_number, pre_name):
             print(i_t_min, 'epoch:', checkpoint['epoch'], pred_df.shape)
 
     final_result = merge_result(cob_pred_df)
-    with open('./results/{}_{}_final.pkl'.format(pre_name, ont), 'wb') as fw:
-        pkl.dump(final_result, fw)
+    
+    # with open('./results/{}_{}_final.pkl'.format(pre_name, ont), 'wb') as fw:
+    #     pkl.dump(final_result, fw)
+    
     logger.info("Done")
     logger.info("Saved predictions; skipping evaluation.")
+    return final_result
 
 if __name__ == '__main__':
     main()
