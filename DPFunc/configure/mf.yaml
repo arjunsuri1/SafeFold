@@ -1,0 +1,13 @@
+name: mf
+mlb: ./mlb/mf_go.mlb
+results: ./results
+
+base:
+  interpro_whole: ./processed_file/interpro/{}.pkl
+
+test:
+  name: test
+  pid_list_file: ./processed_file/mf_test_used_pid_list.pkl
+  pid_pdb_file: ./processed_file/graph_features/mf_test_whole_pdb_part0.pkl
+  pid_go_file: ./processed_file/mf_test_pid_go.txt
+  interpro_file: ./processed_file/mf_test_interpro_file.pkl

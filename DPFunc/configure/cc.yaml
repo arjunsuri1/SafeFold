@@ -1,0 +1,28 @@
+name: cc
+mlb: ./mlb/cc_go.mlb
+results: ./results
+
+base:
+  interpro_whole: ./data/interpro/{}.pkl
+
+train:
+  name: train
+  pid_list_file: ./data/cc_train_used_pid_list.pkl
+  pid_go_file: ./data/cc_train_go.txt
+  pid_pdb_file: ./data/PDB/graph_feature/cc_train_whole_pdb_part{}.pkl
+  train_file_count: 9
+  interpro_file: ./data/cc_train_interpro.pkl
+
+valid:
+  name: valid
+  pid_list_file: ./data/cc_test1_used_pid_list.pkl
+  pid_go_file: ./data/cc_test1_go.txt
+  pid_pdb_file: ./data/PDB/graph_feature/cc_test1_whole_pdb_part0.pkl
+  interpro_file: ./data/cc_test1_interpro.pkl
+
+test:
+  name: test
+  pid_list_file: ./data/cc_test2_used_pid_list.pkl
+  pid_go_file: ./data/cc_test2_go.txt
+  pid_pdb_file: ./data/PDB/graph_feature/cc_test2_whole_pdb_part0.pkl
+  interpro_file: ./data/cc_test2_interpro.pkl
