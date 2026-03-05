@@ -7,11 +7,11 @@ import torch
 import numpy as np
 from dgl.dataloading import GraphDataLoader
 
-from DPFunc.data_utils import get_pdb_data, get_mlb, get_inter_whole_data
-from DPFunc.models import combine_inter_model
-from DPFunc.objective import AverageMeter
-from DPFunc.model_utils import test_performance_gnn_inter, merge_result, FocalLoss
-from DPFunc.evaluation import new_compute_performance_deepgoplus
+from DPFunc_scripts.data_utils import get_pdb_data, get_mlb, get_inter_whole_data
+from DPFunc_scripts.models import combine_inter_model
+from DPFunc_scripts.objective import AverageMeter
+from DPFunc_scripts.model_utils import test_performance_gnn_inter, merge_result, FocalLoss
+from DPFunc_scripts.evaluation import new_compute_performance_deepgoplus
 
 import os
 import pickle as pkl

@@ -5,8 +5,8 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 from dgl.dataloading import GraphDataLoader
-from DPFunc.models import combine_inter_model
-from DPFunc.model_utils import test_performance_gnn_inter, merge_result
+from .DPFunc_scripts.models import combine_inter_model
+from .DPFunc_scripts.model_utils import test_performance_gnn_inter, merge_result
 from typing import List, Sequence, Optional, Dict, Any, Union
 
 

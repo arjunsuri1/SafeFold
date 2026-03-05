@@ -10,7 +10,7 @@ from pathlib import Path
 import scipy.sparse as sp
 from Bio.PDB import PDBParser
 from Bio.SeqUtils import seq1
-from DPFunc_pred import dpfunc_predict_in_memory
+from .DPFunc_pred import dpfunc_predict_in_memory
 
 
 # Constants from DPFunc_model checkpoints

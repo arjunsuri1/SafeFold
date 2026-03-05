@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Sequence, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 STOP_CODONS = {"TAA", "TAG", "TGA"}
 DEFAULT_START_CODONS = {"ATG", "GTG", "TTG"}
@@ -153,7 +153,7 @@ def find_orfs(
 
 
 if __name__ == "__main__":
-    test = "ATGAAATTTTAGAATGAAATTTTAGAATGAAATTTTAG"
+    test = """atgaaaaccctgctgctggcggtggcggtggtggcgtttgtgtgcctgggcagcgcggatcagctgggcctgggccgccagcagattgattggggccagggccaggcggtgggcccgccgtataccctgtgctttgaatgcaaccgcatgaccagcagcgattgcagcaccgcgctgcgctgctatcgcggcagctgctataccctgtatcgcccggatgaaaactgcgaactgaaatgggcggtgaaaggctgcgcggaaacctgcccgaccgcgggcccgaacgaacgcgtgaaatgctgccgcagcccgcgctgcaacgatgattaa"""
     out = find_orfs(test, min_aa_len=1)
     for o in out:
         print(o)

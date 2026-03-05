@@ -17,8 +17,8 @@ import torch.nn.functional as F
 import pickle as pkl
 import time
 
-from DPFunc.objective import AverageMeter
-from DPFunc.evaluation import new_compute_performance_deepgoplus
+from .objective import AverageMeter
+from .evaluation import new_compute_performance_deepgoplus
 
 class FocalLoss(torch.nn.Module):
     def __init__(self, gamma=2, alpha=None):
