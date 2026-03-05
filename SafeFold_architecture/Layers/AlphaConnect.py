@@ -1,9 +1,9 @@
-import subprocess
 import os
+import subprocess
 from pathlib import Path
+from Bio.PDB import PDBParser
 
-
-def alphafold_pred(sequence, outdir="results"):
+def ORF_to_pdb(sequence, outdir="results"):
     Path(outdir).mkdir(exist_ok=True)
 
     cmd = [
@@ -19,21 +19,19 @@ def alphafold_pred(sequence, outdir="results"):
     subprocess.run(cmd, check=True)
 
     # find generated pdb
+    pdb_path = ""
     for file in os.listdir(outdir):
         if file.endswith(".pdb"):
-            return os.path.join(outdir, file)
-
+            pdb_path = os.path.join(outdir, file)
+    if pdb_path != "":
+        parser = PDBParser(QUIET=True)
+        structure = parser.get_structure("protein", pdb_path)
+        os.remove(pdb_path)
+        
+        return structure[0]
     raise RuntimeError("No PDB produced")
 
 
 if __name__ == "__main__":
     seq = "MSTNPKPQRKTKRNTNRRPQDVKFPGG"
-    
-    
-    pdb_path = alphafold_pred(seq)
-
-    # print file contents
-    with open(pdb_path, "r") as f:
-        print(f.read())
-
-    os.remove(pdb_path)
+    print(ORF_to_pdb(seq))
