@@ -13,7 +13,7 @@ echo -e "${BLUE}Creating conda environment...${NC}"
 conda env create -f environment.yml --solver classic --override-channels -c pytorch -c dglteam/label/cu113 -c defaults
 
 echo -e "${BLUE}Activating environment...${NC}"
-source $(conda info --base)/etc/profile.d/conda.sh
+source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate SafeFold
 
 echo -e "${BLUE}Installing pipx...${NC}"
@@ -27,14 +27,19 @@ echo -e "${BLUE}Installing gdown...${NC}"
 pip install gdown
 
 echo -e "${BLUE}Downloading DPFunc models...${NC}"
-gdown https://drive.google.com/uc?id=1V0VTFTiB29ilbAIOZn0okBQWPlbOI3wN
+ARCHIVE="dpfunc_models.tar.gz"
+gdown -O "$ARCHIVE" "https://drive.google.com/uc?id=1V0VTFTiB29ilbAIOZn0okBQWPlbOI3wN"
 
 echo -e "${BLUE}Extracting models...${NC}"
-tar -xzf *.gz
+tar -xzf "$ARCHIVE"
 
 echo -e "${BLUE}Moving models to correct directory...${NC}"
 mkdir -p SafeFold_architecture/DPFunc_fork/save_models
 mv save_models/* SafeFold_architecture/DPFunc_fork/save_models/
+
+echo -e "${BLUE}Cleaning up...${NC}"
+rm -rf save_models
+rm -f "$ARCHIVE"
 
 echo -e "${GREEN}Setup complete.${NC}"
 echo ""
