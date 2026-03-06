@@ -42,7 +42,7 @@ def analyseAA(aa_seq):
     toxicity = go_terms_to_toxicity(go_terms)
         
     if toxicity > 0.5:
-        print(f"⚠️ Probably toxic ({round(toxicity, 3)})")
+        print(f"⚠️ Probably toxic ({toxicity:.2})")
     else:
         print(f"👍 Not toxic")
     
@@ -65,6 +65,7 @@ def analyseDNA(DNA):
             print(ORF)
     else:
         print("\n✅ No toxicity detected")
+    print("\n")
 
 def main():
     parser = argparse.ArgumentParser(description="SafeFold toxicity screening")
@@ -85,7 +86,6 @@ def main():
                 toxic_seqs.append(seq)
         else:
             analyseDNA(seq)
-        print("\n")
     
     if args.AA:
         if toxic_seqs:
@@ -94,6 +94,8 @@ def main():
                 print(seq)
         else:
             print("✅ No toxicity detected")
+    
+    print("\n")
 
 
 if __name__ == "__main__":

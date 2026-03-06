@@ -11,13 +11,15 @@ The pipeline combines classical bioinformatics with deep learning:
 3. **Function Prediction (DPFunc)** – predicts Gene Ontology (GO) molecular functions
 4. **Toxicity Classification** – estimates toxicity probability using a trained ML model
 
-The output is a **toxicity probability score for each detected protein**.
-
----
+The output is a **toxicity probability score for each detected protein**. The current model is limited to detecting β-neurotoxins.
 
 ## Pipeline Overview
 
----
+<p align="center">
+  <img src="./images/SafeFold.png" width="900">
+  <br>
+  <em>Overview of the SafeFold screening pipeline.</em>
+</p>
 
 ## Installation
 
