@@ -16,7 +16,7 @@ The output is a **toxicity probability score for each detected protein**. The cu
 ## Pipeline Overview
 
 <p align="center">
-  <img src="./images/SafeFold.png" width="900">
+  <img src="./Images/SafeFold.png" width="900">
   <br>
   <em>Overview of the SafeFold screening pipeline.</em>
 </p>
