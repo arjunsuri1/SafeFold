@@ -10,7 +10,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Creating conda environment...${NC}"
-conda env create -f environment.yml --solver classic --override-channels -c pytorch -c dglteam/label/cu113 -c defaults
+conda env create -f environment.yml --solver classic
 
 echo -e "${BLUE}Activating environment...${NC}"
 source "$(conda info --base)/etc/profile.d/conda.sh"
